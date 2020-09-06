@@ -1,0 +1,22 @@
+.sidebar-chat {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f2f2f2;
+  }
+
+  &__info {
+    margin-left: 10px;
+  }
+
+  &__room-name {
+    font-size: 1rem;
+  }
+
+  &__message {
+    font-size: 0.875rem;
+  }
+}

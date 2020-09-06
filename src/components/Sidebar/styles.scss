@@ -34,4 +34,9 @@
     border: none;
     outline-width: 0;
   }
+
+  &__chats {
+    flex: 1;
+    background-color: #fff;
+  }
 }
