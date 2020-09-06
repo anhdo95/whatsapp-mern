@@ -25,6 +25,15 @@ app.get('/', (req, res) => {
   res.send('OK')
 })
 
+app.get('/messages', async (req, res) => {
+  try {
+    const messages = await Message.find()
+    res.json(messages)
+  } catch (error) {
+    res.json(error)
+  }
+})
+
 app.post('/messages', async (req, res) => {
   try {
     const createdMessage = await new Message({
@@ -34,7 +43,7 @@ app.post('/messages', async (req, res) => {
       received: req.body.received,
     }).save()
 
-    res.json(createdMessage)
+    res.status(201).json(createdMessage)
   } catch (error) {
     res.json(error)
   }
