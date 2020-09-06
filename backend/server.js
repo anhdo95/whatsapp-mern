@@ -1,11 +1,20 @@
 import express from 'express'
 import mongoose from 'mongoose'
+import Pusher from 'pusher';
 
 import Message from './models/message.js'
 
 // App configs
 const port = process.env.PORT || 9000
 const app = express()
+
+const pusher = new Pusher({
+  appId: '1067707',
+  key: 'cd1a4e0cb02a66800705',
+  secret: 'a9be03ec054517a5a755',
+  cluster: 'ap1',
+  encrypted: true
+});
 
 // Middleware
 app.use(express.json())
@@ -16,6 +25,24 @@ mongoose.connect(dbConnectionUri, {
   useCreateIndex: true,
   useNewUrlParser: true,
   useUnifiedTopology: true,
+})
+
+mongoose.connection.once('open', () => {
+  Message.watch().on('change', (change) => {
+    console.log('change :>> ', change);
+
+    if ('insert' === change.operationType) {
+      const document = change.fullDocument
+
+      pusher.trigger('messages', 'insert', {
+        id: document._id,
+        name: document.name,
+        content: document.content,
+        timestamp: document.timestamp,
+        received: document.received,
+      })
+    }
+  })
 })
 
 // ???
