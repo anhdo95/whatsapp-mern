@@ -1,5 +1,6 @@
 import express from 'express'
 import mongoose from 'mongoose'
+import cors from 'cors'
 import Pusher from 'pusher';
 
 import Message from './models/message.js'
@@ -18,9 +19,10 @@ const pusher = new Pusher({
 
 // Middleware
 app.use(express.json())
+app.use(cors())
 
 // DB configs
-const dbConnectionUri = 'mongodb+srv://admin:CtzXpokYIIUSPGv3@cluster0.d8r39.mongodb.net/whatsappdb?retryWrites=true&w=majority'
+const dbConnectionUri = 'mongodb+srv://admin:yUZGwNIYV0uigevR@cluster0.d8r39.mongodb.net/whatsappdb?retryWrites=true&w=majority'
 mongoose.connect(dbConnectionUri, {
   useCreateIndex: true,
   useNewUrlParser: true,
@@ -55,7 +57,13 @@ app.get('/', (req, res) => {
 app.get('/messages', async (req, res) => {
   try {
     const messages = await Message.find()
-    res.json(messages)
+    res.json(messages.map(m => ({
+      id: m._id,
+      name: m.name,
+      content: m.content,
+      timestamp: m.timestamp,
+      received: m.received,
+    })))
   } catch (error) {
     res.json(error)
   }
