@@ -1,8 +1,8 @@
-import React from 'react';
-import './App.scss';
+import React, { useState, useEffect } from "react";
+import "./App.scss";
 
-import Sidebar from './components/Sidebar/'
-import Chat from './components/Chat/';
+import Sidebar from "./components/Sidebar/";
+import Chat from "./components/Chat/";
 
 function App() {
   return (

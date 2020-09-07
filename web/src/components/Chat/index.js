@@ -1,15 +1,44 @@
-import React from 'react'
-import { Avatar, IconButton } from '@material-ui/core'
-import SearchIcon from '@material-ui/icons/Search'
-import AttachFileIcon from '@material-ui/icons/AttachFile';
-import MoreVertIcon from '@material-ui/icons/MoreVert'
-import InsertEmoticonIcon from '@material-ui/icons/InsertEmoticon'
-import MicIcon from '@material-ui/icons/Mic'
-import SendIcon from '@material-ui/icons/Send'
+import React, { useState, useEffect } from "react";
+import Pusher from "pusher-js";
+import classNames from "classnames";
+import { Avatar, IconButton } from "@material-ui/core";
+import SearchIcon from "@material-ui/icons/Search";
+import AttachFileIcon from "@material-ui/icons/AttachFile";
+import MoreVertIcon from "@material-ui/icons/MoreVert";
+import InsertEmoticonIcon from "@material-ui/icons/InsertEmoticon";
+import MicIcon from "@material-ui/icons/Mic";
+import SendIcon from "@material-ui/icons/Send";
 
-import './styles.scss'
+import * as apiService from "../../services/api.service";
+
+import "./styles.scss";
 
 function Chat() {
+  const [messages, setMessages] = useState([]);
+
+  useEffect(() => {
+    apiService.getMessages().then((messages) => {
+      setMessages(messages);
+    });
+  }, []);
+
+  useEffect(() => {
+    Pusher.logToConsole = true;
+
+    const pusher = new Pusher("cd1a4e0cb02a66800705", {
+      cluster: "ap1",
+    });
+
+    const channel = pusher.subscribe("messages");
+    channel.bind("insert", (newMessage) => {
+      setMessages((preMessages) => preMessages.concat(newMessage));
+    });
+    return () => {
+      channel.unbind("insert");
+      channel.unsubscribe("messages");
+    };
+  }, [messages]);
+
   return (
     <div className="chat">
       <header className="chat__header">
@@ -32,36 +61,51 @@ function Chat() {
       </header>
 
       <div className="chat__body">
-        <ul className="chat__body-messages">
-          <li className="chat__body-message">
-            <strong className="chat__body-name">David</strong>
-            <p className="chat__body-text">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-            <span className="chat__body-timestamp">
-              {new Date().toUTCString()}
-            </span>
-          </li>
-          <li className="chat__body-message chat__body-message--text-right">
-            <strong className="chat__body-name">Richard Do</strong>
-            <p className="chat__body-text chat__body-text--highlight">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-            <span className="chat__body-timestamp">
-              {new Date().toUTCString()}
-            </span>
-          </li>
-        </ul>
+        <ul className="chat__body-messages">{messages.map(renderMessage)}</ul>
       </div>
 
       <footer className="chat__footer">
-        <IconButton><InsertEmoticonIcon /></IconButton>
+        <IconButton>
+          <InsertEmoticonIcon />
+        </IconButton>
         <form className="chat__footer-comment-box">
-          <input className="chat__footer-comment-input" type="text" placeholder="Type a message" />
+          <input
+            className="chat__footer-comment-input"
+            type="text"
+            placeholder="Type a message"
+          />
           <button className="chat__footer-send-btn" type="submit">
             <SendIcon />
           </button>
         </form>
-        <IconButton><MicIcon /></IconButton>
+        <IconButton>
+          <MicIcon />
+        </IconButton>
       </footer>
     </div>
-  )
+  );
 }
 
-export default Chat
+function renderMessage(message) {
+  const bodyMessageClass = classNames({
+    "chat__body-message": true,
+    "chat__body-message--text-right": message.received,
+  });
+
+  const bodyTextClass = classNames({
+    "chat__body-text": true,
+    "chat__body-text--highlight": message.received,
+  });
+
+  return (
+    <li key={message.id} className={bodyMessageClass}>
+      <strong className="chat__body-name">{message.name}</strong>
+      <p className={bodyTextClass}>{message.content}</p>
+      <span className="chat__body-timestamp">
+        {new Date(message.timestamp).toUTCString()}
+      </span>
+    </li>
+  );
+}
+
+export default Chat;

@@ -40,6 +40,8 @@
   }
 
   &__body-message {
+    clear: both;
+    
     &:not(:last-child) {
       margin-bottom: 1rem;
     }
